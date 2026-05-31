@@ -256,3 +256,43 @@ footer { font-size: 12px; color: #475569; margin-top: 20px; text-align: center; 
     50% { opacity: 0.7; }
     100% { opacity: 1; }
 }
+/* --- MOBILE RESPONSIVE LAYOUT CLEANUP --- */
+@media (max-width: 768px) {
+    .main-layout {
+        flex-direction: column; /* Stacks the sidebar on top of the workspace instead of side-by-side */
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 16px;
+        border-right: none;
+        border-bottom: 1px solid #334155;
+    }
+
+    .brand {
+        margin-bottom: 12px;
+    }
+
+    .workspace {
+        padding: 16px;
+        height: calc(100vh - 140px); /* Keeps everything perfectly on screen without scrolling away */
+    }
+
+    .workspace-header h1 {
+        font-size: 20px;
+    }
+
+    textarea {
+        font-size: 16px; /* Prevents mobile Chrome from auto-zooming in when you type */
+    }
+
+    .control-panel {
+        flex-direction: column; /* Stacks your record/stop/save buttons nicely on small screens */
+        gap: 8px;
+    }
+
+    .btn-save {
+        margin-left: 0; /* Align full width on mobile devices */
+    }
+}

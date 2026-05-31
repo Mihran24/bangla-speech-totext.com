@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangla Speech To Text</title>
+    
+    <!-- THIS LINE ADDS THE ICON TO YOUR BROWSER TAB -->
+    <link rel="icon" type="image/png" href="LOGO.png">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 1. INITIAL LOGIN OVERLAY WITH USERNAME OPTION -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-card">
+            <h2>Voice Workspace</h2>
+            <p>Enter your details to initialize the workspace</p>
+            <input type="text" id="login-username" placeholder="Choose a username" class="login-input" required>
+            <input type="email" placeholder="Email address" class="login-input">
+            <input type="password" placeholder="Password" class="login-input">
+            <button id="login-submit-btn" class="login-btn">Launch Workspace</button>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APP INTERFACE -->
+    <div id="app-container" class="main-layout hidden">
+        
+        <!-- LEFT SIDEBAR DESIGN -->
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <button class="new-session-btn">
+                    + New Session
+                </button>
+            </div>
+            <div class="sidebar-bottom">
+                <div class="user-profile">
+                    <div id="user-avatar" class="avatar">U</div>
+                    <span id="display-username" class="username">User</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main class="workspace">
+            <header class="workspace-header">
+                <div class="header-left">
+                    <h1>Bengali Dictation Hub</h1>
+                    <p>Continuous voice-to-text processing engine</p>
+                </div>
+                <div id="status" class="status-badge">Ready Engine</div>
+            </header>
+
+            <section class="content-area">
+                <!-- STRUCTURED TEXT PANEL -->
+                <div class="editor-container">
+                    <textarea id="text-output" placeholder="Your spoken Bengali transcript will generate here in real-time..."></textarea>
+                </div>
+                
+                <!-- CONTROL PANEL DECK -->
+                <div class="control-panel">
+                    <button id="record-btn" class="panel-btn btn-record" title="Start Recording">
+                        🎤 Start Recording
+                    </button>
+                    <button id="stop-btn" class="panel-btn btn-stop" title="Stop Recording" disabled>
+                        ⏹ Stop Engine
+                    </button>
+                    <button id="save-btn" class="panel-btn btn-save" title="Export File">
+                        📄 Export Word Doc
+                    </button>
+                </div>
+            </section>
+
+            <footer>
+                by Mihran Ahmed Khan
+            </footer>
+        </main>
+    </div>
+
+    <!-- Custom Right-Click Context Menu -->
+    <div id="custom-menu" class="context-menu">
+        <div id="edit-word-option" class="menu-item">🎤 Replace Word by Voice</div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

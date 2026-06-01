@@ -7,6 +7,10 @@ const loginUsernameInput = document.getElementById('login-username');
 const displayUsername = document.getElementById('display-username');
 const userAvatar = document.getElementById('user-avatar');
 
+// --- DEVICE BASED LOCALSTORAGE CHAT SESSION STORAGE CONFIG ---
+let chatSessions = JSON.parse(localStorage.getItem('stt_sessions')) || [];
+let activeSessionId = localStorage.getItem('stt_active_session_id') || null;
+
 loginSubmitBtn.addEventListener('click', () => {
     const inputName = loginUsernameInput.value.trim();
     
@@ -15,26 +19,45 @@ loginSubmitBtn.addEventListener('click', () => {
         return;
     }
 
-    displayUsername.innerText = inputName;
-    userAvatar.innerText = inputName.charAt(0).toUpperCase();
-
-    loginOverlay.style.opacity = '0';
-    setTimeout(() => {
-        loginOverlay.classList.add('hidden');
-        appContainer.classList.remove('hidden');
-    }, 400);
+    // Save login profile state locally
+    localStorage.setItem('stt_username', inputName);
+    initializeWorkspace(inputName);
 });
 
-// --- LAG-PROOF MICRO-SESSION SPEECH ENGINE ---
+// Check if username already exists on this device
+window.addEventListener('DOMContentLoaded', () => {
+    const savedName = localStorage.getItem('stt_username');
+    if (savedName) {
+        initializeWorkspace(savedName);
+    }
+});
+
+function initializeWorkspace(username) {
+    displayUsername.innerText = username;
+    userAvatar.innerText = username.charAt(0).toUpperCase();
+
+    loginOverlay.classList.add('hidden');
+    appContainer.classList.remove('hidden');
+
+    // Load up history panel logs
+    renderSessionsList();
+    
+    if (activeSessionId) {
+        loadSession(activeSessionId);
+    } else if (chatSessions.length > 0) {
+        loadSession(chatSessions[0].id);
+    } else {
+        createNewSession();
+    }
+}
+
+// --- SPEECH DETECTOR SYSTEMS SETUP ---
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 if (!SpeechRecognition) {
     alert("Your browser does not support Speech Recognition. Please try using Google Chrome.");
 } else {
     const recognition = new SpeechRecognition();
-    
-    // FIX: Set continuous to false. This forces Chrome to process small, fast chunks 
-    // of speech instantly instead of clogging up the browser's memory buffer.
     recognition.continuous = false; 
     recognition.interimResults = true; 
     recognition.lang = 'bn-BD';
@@ -51,15 +74,20 @@ if (!SpeechRecognition) {
     const statusMsg = document.getElementById('status');
     const customMenu = document.getElementById('custom-menu');
     const editWordOption = document.getElementById('edit-word-option');
+    const newSessionBtn = document.getElementById('new-session-btn');
+    const sessionsListContainer = document.getElementById('sessions-list');
 
     let lastTimestamp = 0;
     let selectedText = "";
     let selectionStart = 0;
     let selectionEnd = 0;
-
-    // BASELINE SYSTEM MEMORY
     let liveStringCache = "";       
-    let userClickedStop = true;    // Starts as true until record is clicked
+    let userClickedStop = true;
+
+    // Save text area into current active local layout session automatically as user dictates or edits
+    textOutput.addEventListener('input', () => {
+        updateActiveSessionText(textOutput.value);
+    });
 
     recordBtn.addEventListener('click', () => {
         userClickedStop = false;
@@ -97,7 +125,6 @@ if (!SpeechRecognition) {
             }
         }
 
-        // Apply automatic punctuation pacing dynamically
         let punctuation = '';
         if (liveStringCache.length > 0 && currentChunkFinalized.length > 0) {
             const pauseDuration = currentTime - lastTimestamp;
@@ -112,30 +139,23 @@ if (!SpeechRecognition) {
             }
         }
 
-        // Combine cached text, newly finalized phrase block, and live interim words
         let compiledFinal = liveStringCache + (currentChunkFinalized ? punctuation + currentChunkFinalized.trim() : '');
         textOutput.value = compiledFinal + (currentChunkInterim ? ' ' + currentChunkInterim.trim() : '');
         
-        // Auto-scroll screen window down
         textOutput.scrollTop = textOutput.scrollHeight;
 
         if (currentChunkFinalized) {
             lastTimestamp = Date.now();
-            // Instantly sync our baseline cache memory so it doesn't get lost
             liveStringCache = compiledFinal; 
+            updateActiveSessionText(compiledFinal);
         }
     };
 
-    // FIX: THE SEAMLESS RE-LOOP CYCLE
-    // Because continuous is false, Chrome naturally finishes the session when you pause slightly.
-    // We catch that instant and loop it right back to life before any lag can form!
     recognition.onend = () => {
         if (!userClickedStop) {
-            // Save current screen data to safety cache and hot-swap the mic back on
             liveStringCache = textOutput.value;
             recognition.start();
         } else {
-            // Only run clean closures if user manually hits 'Stop Engine'
             if (textOutput.value.trim() && !textOutput.value.trim().endsWith('।')) {
                 textOutput.value += '।';
             }
@@ -143,14 +163,14 @@ if (!SpeechRecognition) {
             statusMsg.style.borderColor = "#334155";
             statusMsg.style.color = "#94a3b8";
             resetButtonStates();
+            updateActiveSessionText(textOutput.value);
         }
     };
 
-    // Keep errors from breaking our hot-swap cycle loop
     recognition.onerror = (event) => {
         if (event.error === 'no-speech') return;
         if (event.error === 'aborted') return;
-        console.log("Engine recovered from parameter block:", event.error);
+        console.log("Engine recovered:", event.error);
     };
 
     function resetButtonStates() {
@@ -158,6 +178,118 @@ if (!SpeechRecognition) {
         recordBtn.classList.remove('recording');
         recordBtn.innerText = "🎤 Start Recording";
         stopBtn.disabled = true;
+    }
+
+    // --- DEVICE BASED SESSION STORAGE SYSTEMS ---
+    newSessionBtn.addEventListener('click', () => {
+        if (!userClickedStop) {
+            alert("Please stop recording before creating a new session.");
+            return;
+        }
+        createNewSession();
+    });
+
+    function createNewSession() {
+        const id = 'session_' + Date.now();
+        const newSession = {
+            id: id,
+            title: "New Transcription",
+            text: "",
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+        };
+
+        chatSessions.unshift(newSession);
+        activeSessionId = id;
+        saveSessionsToDevice();
+        
+        renderSessionsList();
+        loadSession(id);
+    }
+
+    function loadSession(id) {
+        const session = chatSessions.find(s => s.id === id);
+        if (!session) return;
+
+        activeSessionId = id;
+        localStorage.setItem('stt_active_session_id', id);
+        
+        textOutput.value = session.text;
+        liveStringCache = session.text;
+        
+        // Highlight active layout element 
+        document.querySelectorAll('.session-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.dataset.id === id) item.classList.add('active');
+        });
+    }
+
+    function updateActiveSessionText(text) {
+        const session = chatSessions.find(s => s.id === activeSessionId);
+        if (!session) return;
+
+        session.text = text;
+
+        // Auto-update title based on first few spoken words
+        if (text.trim() !== "") {
+            const cleanText = text.replace(/[।,,]/g, '').trim();
+            const words = cleanText.split(/\s+/);
+            session.title = words.slice(0, 3).join(' ') + (words.length > 3 ? '...' : '');
+        } else {
+            session.title = "New Transcription";
+        }
+
+        saveSessionsToDevice();
+        
+        // Quietly update layout parameters without breaking input focus
+        const activeItem = document.querySelector(`.session-item[data-id="${activeSessionId}"] .session-title`);
+        if (activeItem) activeItem.innerText = session.title;
+    }
+
+    function deleteSession(id, event) {
+        event.stopPropagation(); // Avoid triggering loading event selection link
+        
+        chatSessions = chatSessions.filter(s => s.id !== id);
+        saveSessionsToDevice();
+        
+        if (activeSessionId === id) {
+            activeSessionId = chatSessions.length > 0 ? chatSessions[0].id : null;
+            localStorage.setItem('stt_active_session_id', activeSessionId);
+        }
+
+        renderSessionsList();
+
+        if (activeSessionId) {
+            loadSession(activeSessionId);
+        } else {
+            createNewSession();
+        }
+    }
+
+    function saveSessionsToDevice() {
+        localStorage.setItem('stt_sessions', JSON.stringify(chatSessions));
+    }
+
+    function renderSessionsList() {
+        sessionsListContainer.innerHTML = '';
+        
+        chatSessions.forEach(session => {
+            const item = document.createElement('div');
+            item.className = `session-item ${session.id === activeSessionId ? 'active' : ''}`;
+            item.dataset.id = session.id;
+            
+            item.innerHTML = `
+                <div class="session-info">
+                    <span class="session-title">${session.title}</span>
+                    <span class="session-date">${session.date}</span>
+                </div>
+                <button class="delete-session-btn" title="Delete Session">🗑</button>
+            `;
+            
+            item.addEventListener('click', () => loadSession(session.id));
+            item.querySelector('.delete-session-btn').addEventListener('click', (e) => deleteSession(session.id, e));
+            
+            sessionsListContainer.appendChild(item);
+        });
     }
 
     // --- SELECTION EDIT FUNCTIONALITY ---
@@ -193,7 +325,8 @@ if (!SpeechRecognition) {
             const fullText = textOutput.value;
             const updatedText = fullText.substring(0, selectionStart) + newWord + fullText.substring(selectionEnd);
             textOutput.value = updatedText;
-            liveStringCache = updatedText; // Keep base synced
+            liveStringCache = updatedText; 
+            updateActiveSessionText(updatedText);
             statusMsg.innerText = "Patch Appended";
         }
     };

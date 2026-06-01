@@ -51,7 +51,7 @@ body {
 .login-input {
     width: 100%;
     padding: 12px 16px;
-    margin-bottom: 14px;
+    margin-bottom: 20px;
     border: 1px solid #334155;
     background: #0f172a;
     border-radius: 6px;
@@ -74,7 +74,6 @@ body {
     font-size: 15px;
     font-weight: bold;
     cursor: pointer;
-    margin-top: 10px;
     transition: background-color 0.2s;
 }
 
@@ -103,11 +102,17 @@ body {
     padding: 24px 16px;
 }
 
+.sidebar-top {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 70px);
+}
+
 .brand {
     font-size: 18px;
     font-weight: bold;
     color: #f8fafc;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -121,7 +126,7 @@ body {
 
 .new-session-btn {
     width: 100%;
-    padding: 10px 14px;
+    padding: 12px 14px;
     border: 1px dashed #475569;
     background: transparent;
     color: #cbd5e1;
@@ -129,11 +134,110 @@ body {
     font-size: 14px;
     text-align: left;
     cursor: pointer;
+    margin-bottom: 24px;
+    font-weight: 500;
 }
 
 .new-session-btn:hover {
     border-color: #10b981;
     color: #10b981;
+}
+
+/* CHAT HISTORY CONTAINER VISUALS */
+.history-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.history-section h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #64748b;
+    margin-bottom: 10px;
+    padding-left: 4px;
+}
+
+.sessions-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 4px;
+}
+
+/* Scrollbar tweaks for sidebar logs */
+.sessions-list::-webkit-scrollbar {
+    width: 4px;
+}
+.sessions-list::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+}
+
+.session-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: #1e293b;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.session-item:hover {
+    background: #273549;
+}
+
+.session-item.active {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+.session-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+}
+
+.session-title {
+    font-size: 13px;
+    color: #e2e8f0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 400;
+}
+
+.session-date {
+    font-size: 10px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.delete-session-btn {
+    background: transparent;
+    border: none;
+    color: #475569;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.delete-session-btn:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
 }
 
 .user-profile {
@@ -256,10 +360,11 @@ footer { font-size: 12px; color: #475569; margin-top: 20px; text-align: center; 
     50% { opacity: 0.7; }
     100% { opacity: 1; }
 }
+
 /* --- MOBILE RESPONSIVE LAYOUT CLEANUP --- */
 @media (max-width: 768px) {
     .main-layout {
-        flex-direction: column; /* Stacks the sidebar on top of the workspace instead of side-by-side */
+        flex-direction: column;
     }
 
     .sidebar {
@@ -274,9 +379,18 @@ footer { font-size: 12px; color: #475569; margin-top: 20px; text-align: center; 
         margin-bottom: 12px;
     }
 
+    .new-session-btn {
+        margin-bottom: 12px;
+    }
+
+    .history-section {
+        max-height: 120px;
+        margin-bottom: 12px;
+    }
+
     .workspace {
         padding: 16px;
-        height: calc(100vh - 140px); /* Keeps everything perfectly on screen without scrolling away */
+        height: calc(100vh - 280px);
     }
 
     .workspace-header h1 {
@@ -284,15 +398,15 @@ footer { font-size: 12px; color: #475569; margin-top: 20px; text-align: center; 
     }
 
     textarea {
-        font-size: 16px; /* Prevents mobile Chrome from auto-zooming in when you type */
+        font-size: 16px;
     }
 
     .control-panel {
-        flex-direction: column; /* Stacks your record/stop/save buttons nicely on small screens */
+        flex-direction: column;
         gap: 8px;
     }
 
     .btn-save {
-        margin-left: 0; /* Align full width on mobile devices */
+        margin-left: 0;
     }
 }

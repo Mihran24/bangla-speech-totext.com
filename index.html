@@ -12,14 +12,12 @@
 </head>
 <body>
 
-    <!-- 1. INITIAL LOGIN OVERLAY WITH USERNAME OPTION -->
+    <!-- 1. INITIAL LOGIN OVERLAY WITH USERNAME ONLY -->
     <div id="login-overlay" class="login-overlay">
         <div class="login-card">
             <h2>Voice Workspace</h2>
-            <p>Enter your details to initialize the workspace</p>
+            <p>Enter your username to initialize the workspace</p>
             <input type="text" id="login-username" placeholder="Choose a username" class="login-input" required>
-            <input type="email" placeholder="Email address" class="login-input">
-            <input type="password" placeholder="Password" class="login-input">
             <button id="login-submit-btn" class="login-btn">Launch Workspace</button>
         </div>
     </div>
@@ -27,13 +25,26 @@
     <!-- 2. MAIN APP INTERFACE -->
     <div id="app-container" class="main-layout hidden">
         
-        <!-- LEFT SIDEBAR DESIGN -->
+        <!-- LEFT SIDEBAR DESIGN WITH CHAT HISTORY -->
         <aside class="sidebar">
             <div class="sidebar-top">
-                <button class="new-session-btn">
+                <div class="brand">
+                    <div class="brand-dot"></div>
+                    Mihran STT
+                </div>
+                <button id="new-session-btn" class="new-session-btn">
                     + New Session
                 </button>
+                
+                <!-- Chat History Header and List Container -->
+                <div class="history-section">
+                    <h3>Chat History</h3>
+                    <div id="sessions-list" class="sessions-list">
+                        <!-- Saved sessions will be injected here by JavaScript -->
+                    </div>
+                </div>
             </div>
+            
             <div class="sidebar-bottom">
                 <div class="user-profile">
                     <div id="user-avatar" class="avatar">U</div>
